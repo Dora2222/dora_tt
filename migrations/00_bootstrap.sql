@@ -1,0 +1,9 @@
+CREATE ROLE beauty_app LOGIN PASSWORD '123';
+
+CREATE DATABASE beauty
+  OWNER beauty_app
+  ENCODING 'UTF8'
+  LOCALE_PROVIDER icu
+  ICU_LOCALE 'ru-RU'
+  LOCALE 'C'
+  TEMPLATE template0;
