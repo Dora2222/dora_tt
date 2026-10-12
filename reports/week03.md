@@ -73,3 +73,43 @@
 Миграции выполняются по порядку в новой/пустой учебной базе: `01_init.sql`, затем `02_schema.sql`, затем `03_constraints.sql`. **`01_init.sql` содержит `DROP SCHEMA beauty CASCADE` и удаляет текущую схему, поэтому в уже существующей базе его нельзя запускать повторно без необходимости сброса данных.** Если `01` и `02` уже применены, запускай только `03_constraints.sql`.
 
 Негативные тесты запускаются без `ON_ERROR_STOP=1`, поскольку ожидаемые ошибки должны отображаться, а следующие тесты должны продолжить выполняться.
+
+PS C:\Users\user\OneDrive\Desktop\tursunova-db> \i migrations/03_constraints.sql
+\i : Имя "\i" не распознано как имя командлета, функции, файла сценария или выполняемой программы. Проверьте правильность написания имени, а
+ также наличие и правильность пути, после чего повторите попытку.
+строка:1 знак:1
++ \i migrations/03_constraints.sql
++ ~~
+    + CategoryInfo          : ObjectNotFound: (\i:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+    PS C:\Users\user\OneDrive\Desktop\tursunova-db> git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    README.md.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        README.md
+        README_week03.txt
+        migrations/02_schema.sql
+        migrations/03_constraints.sql
+        queries/
+        reports/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS C:\Users\user\OneDrive\Desktop\tursunova-db> git add migrations/03_constraints.sql queries/week03_negative.sql reports/week03.md
+warning: in the working copy of 'migrations/03_constraints.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'queries/week03_negative.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'reports/week03.md', LF will be replaced by CRLF the next time Git touches it
+PS C:\Users\user\OneDrive\Desktop\tursunova-db> git commit -m "Add week 03 database constraints and negative tests"
+[main abaa8f9] Add week 03 database constraints and negative tests
+ 3 files changed, 280 insertions(+)
+ create mode 100644 migrations/03_constraints.sql
+ create mode 100644 queries/week03_negative.sql
+ create mode 100644 reports/week03.md
+PS C:\Users\user\OneDrive\Desktop\tursunova-db> 

@@ -1,0 +1,269 @@
+                                                                                         Table "beauty.appointments"
+   Column    |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |                             Description                              
+-------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+----------------------------------------------------------------------
+ id          | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ client_id   | bigint                   |           | not null |                              | plain    |             |              | Ссылка на users.id: клиент
+ master_id   | bigint                   |           | not null |                              | plain    |             |              | Ссылка на masters.id
+ service_id  | bigint                   |           | not null |                              | plain    |             |              | Ссылка на services.id
+ start_at    | timestamp with time zone |           | not null |                              | plain    |             |              | 
+ end_at      | timestamp with time zone |           | not null |                              | plain    |             |              | 
+ status      | text                     |           | not null | 'booked'::text               | extended |             |              | booked — записан, completed — выполнена, cancelled — отменена
+ price_total | numeric(10,2)            |           |          |                              | main     |             |              | Цена на момент записи в тенге: прайс может измениться, а история нет
+ created_at  | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+Indexes:
+    "appointments_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "appointments_check" CHECK (end_at > start_at)
+    "appointments_price_total_check" CHECK (price_total >= 0::numeric)
+    "appointments_status_check" CHECK (status = ANY (ARRAY['booked'::text, 'completed'::text, 'cancelled'::text]))
+Access method: heap
+
+                    Sequence "beauty.appointments_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.appointments.id
+
+               Index "beauty.appointments_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.appointments"
+
+                                                             Table "beauty.categories"
+   Column    |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target | Description 
+-------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------
+ id          | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ name        | text                     |           | not null |                              | extended |             |              | 
+ description | text                     |           |          |                              | extended |             |              | 
+ created_at  | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+Indexes:
+    "categories_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
+                     Sequence "beauty.categories_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.categories.id
+
+                Index "beauty.categories_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.categories"
+
+                                                                 Table "beauty.master_services"
+    Column    |     Type      | Collation | Nullable | Default | Storage | Compression | Stats target |                       Description                        
+--------------+---------------+-----------+----------+---------+---------+-------------+--------------+----------------------------------------------------------
+ master_id    | bigint        |           | not null |         | plain   |             |              | 
+ service_id   | bigint        |           | not null |         | plain   |             |              | 
+ price        | numeric(10,2) |           |          |         | main    |             |              | Цена этой услуги у этого мастера в тенге (атрибут связи)
+ duration_min | integer       |           | not null |         | plain   |             |              | За сколько минут мастер выполняет услугу (атрибут связи)
+Indexes:
+    "master_services_pkey" PRIMARY KEY, btree (master_id, service_id)
+Check constraints:
+    "master_services_duration_min_check" CHECK (duration_min > 0)
+    "master_services_price_check" CHECK (price >= 0::numeric)
+Access method: heap
+
+               Index "beauty.master_services_pkey"
+   Column   |  Type  | Key? | Definition | Storage | Stats target 
+------------+--------+------+------------+---------+--------------
+ master_id  | bigint | yes  | master_id  | plain   | 
+ service_id | bigint | yes  | service_id | plain   | 
+primary key, btree, for table "beauty.master_services"
+
+                                                                                  Table "beauty.masters"
+     Column     |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |                   Description                   
+----------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------------------------------------------
+ id             | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ user_id        | bigint                   |           | not null |                              | plain    |             |              | Ссылка на users.id: учётная запись мастера
+ salon_id       | bigint                   |           | not null |                              | plain    |             |              | Ссылка на salons.id: салон, где работает мастер
+ specialization | text                     |           |          |                              | extended |             |              | 
+ bio            | text                     |           |          |                              | extended |             |              | 
+ created_at     | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+Indexes:
+    "masters_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
+                       Sequence "beauty.masters_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.masters.id
+
+                 Index "beauty.masters_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.masters"
+
+                                                                                       Table "beauty.reviews"
+     Column     |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |                        Description                        
+----------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-----------------------------------------------------------
+ id             | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ appointment_id | bigint                   |           | not null |                              | plain    |             |              | Ссылка на appointments.id: к какой записи относится отзыв
+ rating         | smallint                 |           | not null |                              | plain    |             |              | Оценка от 1 до 5
+ comment        | text                     |           |          |                              | extended |             |              | 
+ created_at     | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+Indexes:
+    "reviews_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "reviews_rating_check" CHECK (rating >= 1 AND rating <= 5)
+Access method: heap
+
+                       Sequence "beauty.reviews_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.reviews.id
+
+                 Index "beauty.reviews_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.reviews"
+
+                                                       Table "beauty.roles"
+   Column    |  Type  | Collation | Nullable |           Default            | Storage  | Compression | Stats target | Description 
+-------------+--------+-----------+----------+------------------------------+----------+-------------+--------------+-------------
+ id          | bigint |           | not null | generated always as identity | plain    |             |              | 
+ name        | text   |           | not null |                              | extended |             |              | 
+ description | text   |           |          |                              | extended |             |              | 
+Indexes:
+    "roles_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
+                        Sequence "beauty.roles_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.roles.id
+
+                  Index "beauty.roles_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.roles"
+
+                                                                           Table "beauty.salons"
+   Column   |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |             Description             
+------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------------------------------
+ id         | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ name       | text                     |           | not null |                              | extended |             |              | 
+ address    | text                     |           | not null |                              | extended |             |              | 
+ phone      | text                     |           |          |                              | extended |             |              | 
+ created_at | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+ owner_id   | bigint                   |           |          |                              | plain    |             |              | Ссылка на users.id: владелец салона
+Indexes:
+    "salons_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
+                       Sequence "beauty.salons_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.salons.id
+
+                  Index "beauty.salons_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.salons"
+
+                                                                                                   Table "beauty.services"
+   Column    |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target |                                      Description                                      
+-------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+---------------------------------------------------------------------------------------
+ id          | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ name        | text                     |           | not null |                              | extended |             |              | 
+ price       | numeric(10,2)            |           |          |                              | main     |             |              | Базовая цена услуги в тенге; цена мастера может отличаться, см. master_services.price
+ created_at  | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+ category_id | bigint                   |           |          |                              | plain    |             |              | Ссылка на categories.id
+ description | text                     |           |          |                              | extended |             |              | 
+Indexes:
+    "services_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "services_price_check" CHECK (price >= 0::numeric)
+Access method: heap
+
+                      Sequence "beauty.services_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.services.id
+
+                 Index "beauty.services_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.services"
+
+                                                                     Table "beauty.user_roles"
+   Column    |           Type           | Collation | Nullable | Default | Storage | Compression | Stats target |                    Description                    
+-------------+--------------------------+-----------+----------+---------+---------+-------------+--------------+---------------------------------------------------
+ user_id     | bigint                   |           | not null |         | plain   |             |              | 
+ role_id     | bigint                   |           | not null |         | plain   |             |              | 
+ assigned_at | timestamp with time zone |           | not null | now()   | plain   |             |              | Когда пользователю назначена роль (атрибут связи)
+Indexes:
+    "user_roles_pkey" PRIMARY KEY, btree (user_id, role_id)
+Access method: heap
+
+                Index "beauty.user_roles_pkey"
+ Column  |  Type  | Key? | Definition | Storage | Stats target 
+---------+--------+------+------------+---------+--------------
+ user_id | bigint | yes  | user_id    | plain   | 
+ role_id | bigint | yes  | role_id    | plain   | 
+primary key, btree, for table "beauty.user_roles"
+
+                                                               Table "beauty.users"
+   Column   |           Type           | Collation | Nullable |           Default            | Storage  | Compression | Stats target | Description 
+------------+--------------------------+-----------+----------+------------------------------+----------+-------------+--------------+-------------
+ id         | bigint                   |           | not null | generated always as identity | plain    |             |              | 
+ first_name | text                     |           | not null |                              | extended |             |              | 
+ last_name  | text                     |           | not null |                              | extended |             |              | 
+ phone      | text                     |           | not null |                              | extended |             |              | 
+ email      | text                     |           |          |                              | extended |             |              | 
+ created_at | timestamp with time zone |           | not null | now()                        | plain    |             |              | 
+Indexes:
+    "users_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
+                        Sequence "beauty.users_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.users.id
+
+                  Index "beauty.users_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.users"
+
+                                                            Table "beauty.working_schedules"
+   Column   |          Type          | Collation | Nullable |           Default            | Storage | Compression | Stats target |     Description      
+------------+------------------------+-----------+----------+------------------------------+---------+-------------+--------------+----------------------
+ id         | bigint                 |           | not null | generated always as identity | plain   |             |              | 
+ master_id  | bigint                 |           | not null |                              | plain   |             |              | Ссылка на masters.id
+ work_date  | date                   |           | not null |                              | plain   |             |              | 
+ start_time | time without time zone |           | not null |                              | plain   |             |              | 
+ end_time   | time without time zone |           | not null |                              | plain   |             |              | 
+Indexes:
+    "working_schedules_pkey" PRIMARY KEY, btree (id)
+Check constraints:
+    "working_schedules_check" CHECK (end_time > start_time)
+Access method: heap
+
+                  Sequence "beauty.working_schedules_id_seq"
+  Type  | Start | Minimum |       Maximum       | Increment | Cycles? | Cache 
+--------+-------+---------+---------------------+-----------+---------+-------
+ bigint |     1 |       1 | 9223372036854775807 |         1 | no      |     1
+Sequence for identity column: beauty.working_schedules.id
+
+            Index "beauty.working_schedules_pkey"
+ Column |  Type  | Key? | Definition | Storage | Stats target 
+--------+--------+------+------------+---------+--------------
+ id     | bigint | yes  | id         | plain   | 
+primary key, btree, for table "beauty.working_schedules"
+
